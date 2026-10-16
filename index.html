@@ -47,7 +47,29 @@
 <section class="page" id="page-read"><div class="page-intro"><div class="eyebrow">YOUR COLLECTION</div><h2 data-t="myBooks">My Books</h2><p data-t="readSub">Books I’ve already read</p></div><div class="filters"><button class="filter active" data-filter="all" data-t="all">All books</button><button class="filter" data-filter="uz">O‘zbekcha</button><button class="filter" data-filter="en">English</button><button class="filter" data-filter="other">Other</button></div><div class="book-grid" id="allRead"></div></section>
 <section class="page" id="page-reading"><div class="page-intro"><div class="eyebrow">IN PROGRESS</div><h2 data-t="readingNow">Reading Now</h2><p data-t="readingSub">The book you’re currently reading</p></div><div class="plan-grid" id="allReading"></div></section>
 <section class="page" id="page-planned"><div class="page-intro"><div class="eyebrow">NEXT CHAPTERS</div><h2 data-t="wantRead">Want to Read</h2><p data-t="planSub">Books waiting on your shelf</p></div><div class="plan-grid" id="allPlanned"></div></section>
-<section class="page" id="page-settings"><div class="page-intro"><div class="eyebrow">PREFERENCES</div><h2 data-t="settings">Settings</h2><p data-t="settingsSub">Make your library feel like yours.</p></div><section class="section" style="max-width:650px"><div class="field"><label data-t="language">Interface language</label><select id="languageSelect"><option value="en">English</option><option value="uz">O‘zbekcha</option></select></div><p class="help" data-t="languageHelp">Changing the interface language does not translate original book titles.</p><br><div class="section-title" data-t="dataTitle">Your library data</div><p class="sub" data-t="dataHelp">Saved in this browser only. No cross-device sync yet.</p><br><button class="secondary" id="export" data-t="export">Export library backup (JSON)</button> <button class="secondary" id="reset" data-t="reset">Reset to starter list</button><p class="help" style="margin-top:14px" data-t="globalNote">Shared voting needs a backend and database. Votes in this prototype are local to this browser.</p></section></section>
+<section class="page" id="page-settings">
+  <div class="page-intro">
+    <div class="eyebrow">PREFERENCES</div>
+    <h2 data-t="settings">Settings</h2>
+    <p data-t="settingsSub">Make your library feel like yours.</p>
+  </div>
+  <section class="section" style="max-width:650px">
+    <div class="field">
+      <label data-t="language">Interface language</label>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="uz">O‘zbekcha</option>
+      </select>
+    </div>
+    <p class="help" data-t="languageHelp">Changing the interface language does not translate original book titles.</p>
+    <br>
+    <div class="section-title">Cloud Database & Library Management</div>
+    <p class="sub">Manage and reset your cloud library synchronization state.</p>
+    <br>
+    <button class="primary" id="resetCloud">🔄 Reset Library to Default State</button>
+    <p class="help" style="margin-top:14px">Resets all books, ratings, and pages back to the clean professional default list.</p>
+  </section>
+</section>
 <footer class="footer"><div><strong>My Library</strong> <span data-t="footer">· A little home for the books that stay with you.</span><div style="margin-top:4px">© <span id="year"></span> My Library</div></div><div><a href="#" data-goto="home" data-t="home">Home</a><a href="#" data-goto="read" data-t="myBooks">My Books</a><a href="#" data-goto="planned" data-t="wantRead">Want to Read</a></div></footer>
 </div></main>
 <nav class="mobile-nav">
@@ -69,25 +91,76 @@
 <div class="toast" id="toast"></div>
 <script>
 const seed=[
-["Binafsha shulasi","Usoma Muslim","read"],["Dard etma Alloh etar","Kadir Akel","read"],["Qalbimdasan Allohim","Kadir Akel","read"],["Qulogʻim senda qizim","Abdulloh Muhammad Abdulmuti","read"],["Geklberri Finning boshidan kechirganlari","Mark Tven","read"],["Oʻrgatding Allohim","Ali ibn Xusayin al-ali","read"],["LoL","Fotih Duman","read"],["Odam boʻlish qiyin","Oʻlmas Umarbekov","read"],["Hayot yutqazgan joyidan boshlanar","Mirak Chağri oqTosh","read"],["Garov","Anton Pavlovich Chexov","read","Tragedy / Philosophy","A story about two opposing views: whether a person should live or die, and what isolation can teach."],["Abdulfayzxon","Abdurauf Fitrat","read","Tragedy","A tragedy about the struggle for kingship that ends in death."],["Choliqushi","Rashod Nuri Guntekin","read","Novel","A novel about a young woman’s life and experiences."],["Evrilish","","read"],["Oydin tunlar","Fyodor Dostoyevskiy","read"],
-["Qalb iffati","","planned"],["Yosh qizga nasihat","","planned"],["Pir","Fotih Duman","planned"],["Oxi","Fotih Duman","planned"],["Amo","Fotih Duman","planned"],["Aco","Fotih Duman","planned"],["Dam","Fotih Duman","planned"],["Sir","Fotih Duman","planned"],["Men","Fotih Duman","planned"],["Sen bir olam men bir olam","","planned"],["Devona","Fotih Duman","planned"],["Ikki eshik orasi","Oʻtkir Hoshimov","planned"],["Falastin","","planned"],["Libosindagi Tun","","planned"],["Arosat","Qodir Akel","planned"],["Talaba","","planned"],["Men Robiya","","planned"],["Laylo","","planned"],["Metin Qoyalar","","planned"],["Sabr va shukur","","planned"],["Baxtiyor Oila","","planned"],["Er-xotinga maslahat","","planned"],["Saxobiy ayollar","","planned"],["Jannat boʻstonidagi oilaviy ogʻshomlar","","planned"],["Ogʻshom goʻzalliklari","","planned"],["Quvonchli xabar","","planned"],["Fotima","","planned"],["Maryam","","planned"],["Oisha","","planned"],["Hadicha","","planned"],["Paygʻambarimizdan maktublar","","planned"],["Fotimaning bolasi","","planned"],["Quron bilan hamnafas","","planned"],["1984","George Orwell","planned"],["Yashamoq","","planned"]
-].map((x,i)=>({id:"book-"+(i+1),title:x[0],author:x[1]||"",status:x[2],genre:x[3]||"",description:x[4]||"",language:x[0]==="1984"?"en":"uz",pages:0,rating:0,date:"",cover:"",likes:0,dislikes:0,userVote:""}));
+["Binafsha shulasi","Usoma Muslim","read", "", "", 240, 4],
+["Dard etma Alloh etar","Kadir Akel","read", "", "", 210, 5],
+["Qalbimdasan Allohim","Kadir Akel","read", "", "", 200, 5],
+["Qulogʻim senda qizim","Abdulloh Muhammad Abdulmuti","read", "", "", 320, 5],
+["Geklberri Finning boshidan kechirganlari","Mark Tven","read", "", "", 350, 4],
+["Oʻrgatding Allohim","Ali ibn Xusayin al-ali","read", "", "", 180, 5],
+["LoL","Fotih Duman","read", "", "", 190, 4],
+["Odam boʻlish qiyin","Oʻlmas Umarbekov","read", "", "", 220, 5],
+["Hayot yutqazgan joyidan boshlanar","Mirak Chağri oqTosh","read", "", "", 240, 4],
+["Garov","Anton Pavlovich Chexov","read","Tragedy / Philosophy","A story about two opposing views...", 90, 4],
+["Abdulfayzxon","Abdurauf Fitrat","read","Tragedy","A tragedy about the struggle for kingship...", 110, 4],
+["Choliqushi","Rashod Nuri Guntekin","read","Novel","A novel about a young woman’s life...", 450, 5],
+["Evrilish","","read", "", "", 120, 3],
+["Oydin tunlar","Fyodor Dostoyevskiy","read", "", "", 140, 5],
+["Qalb iffati","","planned", "", "", 200, 0],
+["Yosh qizga nasihat","","planned", "", "", 150, 0],
+["Pir","Fotih Duman","planned", "", "", 230, 0],
+["Oxi","Fotih Duman","planned", "", "", 210, 0],
+["Amo","Fotih Duman","planned", "", "", 220, 0],
+["Aco","Fotih Duman","planned", "", "", 200, 0],
+["Dam","Fotih Duman","planned", "", "", 190, 0],
+["Sir","Fotih Duman","planned", "", "", 250, 0],
+["Men","Fotih Duman","planned", "", "", 240, 0],
+["Sen bir olam men bir olam","","planned", "", "", 210, 0],
+["Devona","Fotih Duman","planned", "", "", 260, 0],
+["Ikki eshik orasi","Oʻtkir Hoshimov","planned", "", "", 380, 0],
+["Falastin","","planned", "", "", 300, 0],
+["Libosindagi Tun","","planned", "", "", 180, 0],
+["Arosat","Qodir Akel","planned", "", "", 220, 0],
+["Talaba","","planned", "", "", 200, 0],
+["Men Robiya","","planned", "", "", 210, 0],
+["Laylo","","planned", "", "", 190, 0],
+["Metin Qoyalar","","planned", "", "", 240, 0],
+["Sabr va shukur","","planned", "", "", 220, 0],
+["Baxtiyor Oila","","planned", "", "", 320, 0],
+["Er-xotinga maslahat","","planned", "", "", 250, 0],
+["Saxobiy ayollar","","planned", "", "", 300, 0],
+["Jannat boʻstonidagi oilaviy ogʻshomlar","","planned", "", "", 280, 0],
+["Ogʻshom goʻzalliklari","","planned", "", "", 210, 0],
+["Quvonchli xabar","","planned", "", "", 190, 0],
+["Fotima","","planned", "", "", 240, 0],
+["Maryam","","planned", "", "", 250, 0],
+["Oisha","","planned", "", "", 310, 0],
+["Hadicha","","planned", "", "", 290, 0],
+["Paygʻambarimizdan maktublar","","planned", "", "", 270, 0],
+["Fotimaning bolasi","","planned", "", "", 200, 0],
+["Quron bilan hamnafas","","planned", "", "", 239, 0],
+["1984","George Orwell","planned","", "", 328, 0],
+["Yashamoq","","planned", "", "", 260, 0]
+].map((x,i)=>({id:"book-"+(i+1),title:x[0],author:x[1]||"",status:x[2],genre:x[3]||"",description:x[4]||"",language:x[0]==="1984"?"en":"uz",pages:x[5]||220,rating:x[6]||0,date:"",cover:"",likes:0,dislikes:0,userVote:""}));
+
 const tr={
-en:{home:"Home",myBooks:"My Books",readingNow:"Reading Now",wantRead:"Want to Read",settings:"Settings",journey:"My Reading Journey",hero:"Books I’ve read, the one I’m reading, and books waiting for me.",read:"Read",avg:"Avg. Rating",pages:"Total Pages",readSub:"Books I’ve already read",viewAll:"View all →",readingSub:"The book you’re currently reading",planSub:"Books waiting on your shelf",all:"All books",settingsSub:"Make your library feel like yours.",language:"Interface language",languageHelp:"Changing the interface language does not translate original book titles.",dataTitle:"Your library data",dataHelp:"Saved in this browser only. No cross-device sync yet.",export:"Export library backup (JSON)",reset:"Reset to starter list",globalNote:"Shared voting needs a backend and database. Votes in this prototype are local to this browser.",footer:"· A little home for the books that stay with you.",booksShort:"Books",readingShort:"Reading",plannedShort:"Planned",add:"Add",bookTitle:"Book title *",author:"Author",bookLang:"Book language",status:"Status *",genre:"Genre / tag",rating:"Your rating (1–5)",date:"Date read",cover:"Cover image",coverHelp:"JPG or PNG. The full cover fits inside the frame without cropping.",description:"Description / your thoughts",cancel:"Cancel",save:"Save book",details:"Book details",markReading:"Reading now",markRead:"Mark as read",movePlan:"Move to Want to Read",edit:"Edit book",delete:"Delete book",likes:"Likes",dislikes:"Dislikes",notRated:"Not rated",score:"Score",emptyTitle:"Your shelf is waiting",emptyText:"Add a book to start filling this section.",searchEmpty:"No books match your search.",voteSaved:"Your vote is saved in this browser. Global voting needs a backend.",voteAgain:"You already voted for this book in this browser.",saved:"Book saved.",deleted:"Book deleted.",updated:"Book status updated.",deletedConfirm:"Delete this book from your library?",resetConfirm:"Reset to the starter list? Current changes will be lost.",resetDone:"Starter list restored.",exportDone:"Library backup exported.",addTitle:"Add a book",editTitle:"Edit book"},
-uz:{home:"Bosh sahifa",myBooks:"O‘qigan kitoblar",readingNow:"Hozir o‘qiyapman",wantRead:"O‘qish rejam",settings:"Sozlamalar",journey:"Mening kitoblar sayohatim",hero:"O‘qigan kitoblarim, hozir o‘qiyotganim va navbat kutayotgan kitoblar.",read:"O‘qilgan",avg:"O‘rtacha baho",pages:"Jami sahifalar",readSub:"O‘qib bo‘lingan kitoblar",viewAll:"Barchasi →",readingSub:"Ayni paytda o‘qiyotgan kitobingiz",planSub:"O‘qish navbatidagi kitoblar",all:"Barcha kitoblar",settingsSub:"Kutubxonangizni o‘zingizga moslang.",language:"Interfeys tili",languageHelp:"Til almashtirilsa ham kitob nomlari asl holida qoladi.",dataTitle:"Kutubxona ma’lumotlari",dataHelp:"Ma’lumotlar faqat shu brauzerda saqlanadi. Qurilmalararo sinxronlash hozircha yo‘q.",export:"Zaxira nusxasini yuklab olish (JSON)",reset:"Boshlang‘ich ro‘yxatni tiklash",globalNote:"Umumiy ovozlar uchun backend va ma’lumotlar bazasi kerak. Hozirgi ovozlar shu brauzerda saqlanadi.",footer:"· Siz bilan qoladigan kitoblar uchun kichik maskan.",booksShort:"Kitoblar",readingShort:"O‘qiyapman",plannedShort:"Reja",add:"Qo‘shish",bookTitle:"Kitob nomi *",author:"Muallif",bookLang:"Kitob tili",status:"Holati *",genre:"Janr / teg",rating:"Shaxsiy baho (1–5)",date:"O‘qilgan sana",cover:"Muqova rasmi",coverHelp:"JPG yoki PNG. Muqova kesilmasdan ramkaga moslashadi.",description:"Tavsif / shaxsiy fikringiz",cancel:"Bekor qilish",save:"Saqlash",details:"Kitob tafsilotlari",markReading:"Hozir o‘qiyapman",markRead:"O‘qilgan deb belgilash",movePlan:"O‘qish rejasiga o‘tkazish",edit:"Tahrirlash",delete:"O‘chirish",likes:"Yoqdi",dislikes:"Yoqmadi",notRated:"Baholanmagan",score:"Hisob",emptyTitle:"Kitob javoningiz sizni kutmoqda",emptyText:"Bu bo‘limni to‘ldirish uchun kitob qo‘shing.",searchEmpty:"Qidiruv bo‘yicha kitob topilmadi.",voteSaved:"Ovozingiz shu brauzerda saqlandi. Umumiy ovozlar uchun backend kerak.",voteAgain:"Bu kitobga ushbu brauzerda ovoz berib bo‘lgansiz.",saved:"Kitob saqlandi.",deleted:"Kitob o‘chirildi.",updated:"Kitob holati yangilandi.",deletedConfirm:"Bu kitob o‘chirilsinmi?",resetConfirm:"Boshlang‘ich ro‘yxat tiklansinmi? O‘zgarishlar yo‘qoladi.",resetDone:"Boshlang‘ich ro‘yxat tiklandi.",exportDone:"Zaxira nusxasi yuklab olindi.",addTitle:"Kitob qo‘shish",editTitle:"Kitobni tahrirlash"}
+en:{home:"Home",myBooks:"My Books",readingNow:"Reading Now",wantRead:"Want to Read",settings:"Settings",journey:"My Reading Journey",hero:"Books I’ve read, the one I’m reading, and books waiting for me.",read:"Read",avg:"Avg. Rating",pages:"Total Pages",readSub:"Books I’ve already read",viewAll:"View all →",readingSub:"The book you’re currently reading",planSub:"Books waiting on your shelf",all:"All books",settingsSub:"Make your library feel like yours.",language:"Interface language",languageHelp:"Changing the interface language does not translate original book titles.",footer:"· A little home for the books that stay with you.",booksShort:"Books",readingShort:"Reading",plannedShort:"Planned",add:"Add",bookTitle:"Book title *",author:"Author",bookLang:"Book language",status:"Status *",genre:"Genre / tag",rating:"Your rating (1–5)",date:"Date read",cover:"Cover image",coverHelp:"JPG or PNG. The full cover fits inside the frame without cropping.",description:"Description / your thoughts",cancel:"Cancel",save:"Save book",details:"Book details",markReading:"Reading now",markRead:"Mark as read",movePlan:"Move to Want to Read",edit:"Edit book",delete:"Delete book",likes:"Likes",dislikes:"Dislikes",notRated:"Not rated",score:"Score",emptyTitle:"Your shelf is waiting",emptyText:"Add a book to start filling this section.",searchEmpty:"No books match your search.",voteSaved:"Your vote is saved in this browser.",voteAgain:"You already voted for this book.",saved:"Book saved.",deleted:"Book deleted.",updated:"Book status updated.",deletedConfirm:"Delete this book from your library?",resetDone:"Cloud library reset successfully.",addTitle:"Add a book",editTitle:"Edit book"},
+uz:{home:"Bosh sahifa",myBooks:"O‘qigan kitoblar",readingNow:"Hozir o‘qiyapman",wantRead:"O‘qish rejam",settings:"Sozlamalar",journey:"Mening kitoblar sayohatim",hero:"O‘qigan kitoblarim, hozir o‘qiyotganim va navbat kutayotgan kitoblar.",read:"O‘qilgan",avg:"O‘rtacha baho",pages:"Jami sahifalar",readSub:"O‘qib bo‘lingan kitoblar",viewAll:"Barchasi →",readingSub:"Ayni paytda o‘qiyotgan kitobingiz",planSub:"O‘qish navbatidagi kitoblar",all:"Barcha kitoblar",settingsSub:"Kutubxonangizni o‘zingizga moslang.",language:"Interfeys tili",languageHelp:"Til almashtirilsa ham kitob nomlari asl holida qoladi.",footer:"· Siz bilan qoladigan kitoblar uchun kichik maskan.",booksShort:"Kitoblar",readingShort:"O‘qiyapman",plannedShort:"Reja",add:"Qo‘shish",bookTitle:"Kitob nomi *",author:"Muallif",bookLang:"Kitob tili",status:"Holati *",genre:"Janr / teg",rating:"Shaxsiy baho (1–5)",date:"O‘qilgan sana",cover:"Muqova rasmi",coverHelp:"JPG yoki PNG. Muqova kesilmasdan ramkaga moslashadi.",description:"Tavsif / shaxsiy fikringiz",cancel:"Bekor qilish",save:"Saqlash",details:"Kitob tafsilotlari",markReading:"Hozir o‘qiyapman",markRead:"O‘qilgan deb belgilash",movePlan:"O‘qish rejasiga o‘tkazish",edit:"Tahrirlash",delete:"O‘chirish",likes:"Yoqdi",dislikes:"Yoqmadi",notRated:"Baholanmagan",score:"Hisob",emptyTitle:"Kitob javoningiz sizni kutmoqda",emptyText:"Bu bo‘limni to‘ldirish uchun kitob qo‘shing.",searchEmpty:"Qidiruv bo‘yicha kitob topilmadi.",voteSaved:"Ovozingiz saqlandi.",voteAgain:"Bu kitobga ovoz bergansiz.",saved:"Kitob saqlandi.",deleted:"Kitob o‘chirildi.",updated:"Kitob holati yangilandi.",deletedConfirm:"Bu kitob o‘chirilsinmi?",resetDone:"Kutubxona muvaffaqiyatli tiklandi.",addTitle:"Kitob qo‘shish",editTitle:"Kitobni tahrirlash"}
 };
+
 let lang=localStorage.getItem("ml-lang")||"en",books;
 try{books=JSON.parse(localStorage.getItem("ml-books"))||seed.map(x=>({...x}));}catch(e){books=seed.map(x=>({...x}));}
 let currentPage="home",filter="all",editingId=null,coverData="",detailId=null;
 const $=id=>document.getElementById(id), trn=k=>tr[lang][k]||tr.en[k]||k, esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function save(){try{localStorage.setItem("ml-books",JSON.stringify(books));}catch(e){toast("Browser storage is full. Try a smaller cover image.");}}
+function save(){try{localStorage.setItem("ml-books",JSON.stringify(books));}catch(e){toast("Browser storage is full.");}}
 function toast(msg){let el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600);}
 function list(status){return books.filter(b=>b.status===status);}
 function score(b){return (b.likes||0)-(b.dislikes||0);}
 function empty(){return `<div class="empty"><b>${trn("emptyTitle")}</b>${trn("emptyText")}</div>`;}
+
 const localCoverFiles={
   "book-1":"binafsha-shulasi","book-2":"dard-etma-alloh-etar","book-3":"qalbimdasan-allohim","book-4":"qulogi-senda-qizim","book-5":"geklberri-finning-boshidan-kechirganlari","book-6":"orgatding-allohim","book-7":"lol","book-8":"odam-bolish-qiyin","book-9":"hayot-yutqazgan-joyidan-boshlanar","book-10":"garov","book-11":"abdulfayzxon","book-12":"choliqushi","book-13":"evrilish","book-14":"oydin-tunlar","book-15":"qalb-iffati","book-16":"yosh-qizga-nasihat","book-17":"pir","book-18":"oxi","book-19":"amo","book-20":"aco","book-21":"gam","book-22":"sir","book-23":"men","book-24":"sen-bir-olam-men-bir-olam","book-25":"devona","book-26":"ikki-eshik-orasi","book-27":"falastin","book-28":"libosindagi-tun","book-29":"arosat","book-30":"talaba","book-31":"men-robiya","book-32":"laylo","book-33":"metin-qoyalar","book-34":"sabr-va-shukur","book-35":"baxtiyor-oila","book-36":"er-xotinga-maslahat","book-37":"saxobiy-ayollar","book-38":"jannat-bostonidagi-oilaviy-ogshomlar","book-39":"ogshom-gozalliklari","book-40":"quvonchli-xabar","book-41":"fotima","book-42":"maryam","book-43":"oisha","book-44":"hadicha","book-45":"paygambarimizdan-maktublar","book-46":"fotimaning-bolasi","book-47":"quron-bilan-hamnafas","book-48":"1984","book-49":"yashamoq"
 };
+
 function cover(b,mini=false){
   const cls=mini?"mini-cover":"cover";
   if(b.cover) return `<div class="${cls}"><img src="${esc(b.cover)}" alt="Cover of ${esc(b.title)}"></div>`;
@@ -95,6 +168,7 @@ function cover(b,mini=false){
   if(stem) return `<div class="${cls}"><img data-local-cover="${stem}" data-title="${esc(b.title)}" src="assets/${stem}.jpg" alt="Cover of ${esc(b.title)}"></div>`;
   return `<div class="${cls}"><span>${esc(b.title)}</span></div>`;
 }
+
 document.addEventListener("error",function(e){
   const img=e.target;
   if(!(img instanceof HTMLImageElement)||!img.dataset.localCover)return;
@@ -102,84 +176,139 @@ document.addEventListener("error",function(e){
   const holder=img.parentElement;
   if(holder) holder.innerHTML=`<span>${esc(img.dataset.title||img.alt.replace(/^Cover of /,""))}</span>`;
 },{capture:true});
-function starLine(n){return n?`<span>${"★".repeat(n)}<span style="color:#4b596d">${"★".repeat(5-n)}</span></span> <span style="color:#e5eefb">${Number(n).toFixed(1)}</span>`:`<span style="color:var(--muted)">${trn("notRated")}</span>`;}
-function bookCard(b){return `<article class="book-card" data-open="${b.id}" tabindex="0">${cover(b)}<div class="title">${esc(b.title)}</div><div class="author">${esc(b.author)}</div><div class="stars">${starLine(Number(b.rating)||0)}</div>${b.language?`<span class="tag">${b.language==="uz"?"O‘zbekcha":b.language==="en"?"English":"Other"}</span>`:""}${b.genre?`<span class="tag">${esc(b.genre)}</span>`:""}${b.description?`<p class="note">${esc(b.description.slice(0,115))}${b.description.length>115?"…":""}</p>`:""}<div class="votes"><button class="vote ${b.userVote==="like"?"selected":""}" data-vote="like" data-id="${b.id}">▲ ${b.likes||0}</button><button class="vote ${b.userVote==="dislike"?"selected":""}" data-vote="dislike" data-id="${b.id}">▼ ${b.dislikes||0}</button><span class="score">${trn("score")} ${score(b)>0?"+":""}${score(b)}</span></div></article>`;}
-function planCard(b){return `<article class="plan-card" data-open="${b.id}" tabindex="0">${cover(b,true)}<div class="plan-info"><div class="title">${esc(b.title)}</div><div class="author">${esc(b.author||"")}</div><div class="sub" style="margin-top:6px">${b.genre?esc(b.genre):b.status==="reading"?"Currently reading":"On your list"}</div><div class="plan-actions"><button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button></div></div></article>`;}
-function filteredRead(){let arr=list("read").sort((a,b)=>score(b)-score(a));if(filter!=="all")arr=arr.filter(b=>b.language===filter);return arr;}
-function renderGrid(target,arr){$(target).innerHTML=arr.length?arr.map(bookCard).join(""):empty();}
-function renderPlans(target,arr){$(target).innerHTML=arr.length?arr.map(planCard).join(""):empty();}
-function render(){let q=$("search").value.trim().toLocaleLowerCase();let matches=books.filter(b=>(b.title+" "+b.author+" "+b.genre).toLocaleLowerCase().includes(q));let read=matches.filter(b=>b.status==="read").sort((a,b)=>score(b)-score(a));let reading=matches.filter(b=>b.status==="reading");let planned=matches.filter(b=>b.status==="planned");
-$("readCount").textContent=list("read").length;$("planCount").textContent=list("planned").length;
-let rated=list("read").filter(b=>Number(b.rating)>0);$("avg").textContent=rated.length?(rated.reduce((s,b)=>s+Number(b.rating),0)/rated.length).toFixed(1):"—";
-let pages=list("read").reduce((s,b)=>s+(Number(b.pages)||0),0);$("pages").textContent=pages.toLocaleString();
-renderGrid("homeRead",read.slice(0,5));renderPlans("homeReading",reading);renderPlans("homePlanned",planned.slice(0,6));renderGrid("allRead",read.filter(b=>filter==="all"||b.language===filter));renderPlans("allReading",reading);renderPlans("allPlanned",planned);
-if(q&&matches.length===0){document.querySelectorAll(".page.active .book-grid,.page.active .plan-grid").forEach(el=>el.innerHTML=`<div class="empty">${trn("searchEmpty")}</div>`);}
-}
-function gotoPage(name){if(name==="add"){openForm();return;}currentPage=name;document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name));window.scrollTo({top:0,behavior:"smooth"});render();}
-function translate(){document.documentElement.lang=lang;$("findCovers").title=lang==="en"?"Find missing book covers online":"Kitob muqovalarini internetdan topish";document.querySelectorAll("[data-t]").forEach(el=>{let k=el.dataset.t;if(trn(k))el.textContent=trn(k);});$("languageSelect").value=lang;$("langToggle").title=lang==="en"?"Switch to Uzbek":"O‘zbekchaga o‘tkazish";$("search").placeholder=lang==="en"?"Search books...":"Kitob qidirish...";$("modalTitle").textContent=editingId?trn("editTitle"):trn("addTitle");render();}
-function openForm(book=null){editingId=book?book.id:null;coverData=book?book.cover||"":"";$("bookForm").reset();$("title").value=book?.title||"";$("author").value=book?.author||"";$("bookLang").value=book?.language||"uz";$("status").value=book?.status||"read";$("genre").value=book?.genre||"";$("bookPages").value=book?.pages||"";$("rating").value=book?.rating||"0";$("date").value=book?.date||"";$("description").value=book?.description||"";$("coverFile").value="";$("preview").innerHTML=coverData?`<img src="${coverData}" alt="Cover preview">`:"Cover preview";$("modalTitle").textContent=editingId?trn("editTitle"):trn("addTitle");$("bookModal").classList.add("open");setTimeout(()=>$("title").focus(),50);}
-function closeModal(id){$(id).classList.remove("open");}
-function openDetail(id){let b=books.find(x=>x.id===id);if(!b)return;detailId=id;let statusOptions=b.status==="read"?`<button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="planned" data-id="${b.id}">${trn("movePlan")}</button>`:b.status==="reading"?`<button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button><button class="small-btn" data-action="planned" data-id="${b.id}">${trn("movePlan")}</button>`:`<button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button>`;
-$("detailBody").innerHTML=`<div class="detail-layout">${cover(b)}<div><h3 class="detail-title" id="detailTitle">${esc(b.title)}</h3><div class="author">${esc(b.author)}</div><div class="stars">${starLine(Number(b.rating)||0)}</div><div class="tag">${b.language==="uz"?"O‘zbekcha":b.language==="en"?"English":"Other"}</div>${b.genre?`<div class="tag">${esc(b.genre)}</div>`:""}<div class="sub" style="margin-top:10px">${b.pages?b.pages+" pages · ":""}${b.date?esc(b.date):""}</div></div></div><div class="detail-description">${esc(b.description||"No description added yet.")}</div><div class="votes"><button class="vote ${b.userVote==="like"?"selected":""}" data-vote="like" data-id="${b.id}">▲ ${trn("likes")} ${b.likes||0}</button><button class="vote ${b.userVote==="dislike"?"selected":""}" data-vote="dislike" data-id="${b.id}">▼ ${trn("dislikes")} ${b.dislikes||0}</button><span class="score">${trn("score")} ${score(b)>0?"+":""}${score(b)}</span></div><div class="detail-actions">${statusOptions}<button class="small-btn" data-action="edit" data-id="${b.id}">${trn("edit")}</button><button class="small-btn" data-action="delete" data-id="${b.id}">${trn("delete")}</button></div>`;$("detailModal").classList.add("open");}
-document.addEventListener("click",e=>{let page=e.target.closest("[data-page]");if(page){gotoPage(page.dataset.page);return;}let go=e.target.closest("[data-goto]");if(go){e.preventDefault();gotoPage(go.dataset.goto);return;}let close=e.target.closest("[data-close]");if(close){closeModal(close.dataset.close);return;}let vote=e.target.closest("[data-vote]");if(vote){e.stopPropagation();castVote(vote.dataset.id,vote.dataset.vote);return;}let action=e.target.closest("[data-action]");if(action){e.stopPropagation();doAction(action.dataset.id,action.dataset.action);return;}let card=e.target.closest("[data-open]");if(card&&!e.target.closest("button"))openDetail(card.dataset.open);let filterBtn=e.target.closest("[data-filter]");if(filterBtn){filter=filterBtn.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===filterBtn));render();}});
-document.addEventListener("keydown",e=>{let card=e.target.closest("[data-open]");if(card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openDetail(card.dataset.open);}if(e.key==="Escape"){closeModal("bookModal");closeModal("detailModal");}});
-function castVote(id,type){let b=books.find(x=>x.id===id);if(!b)return;if(b.userVote){toast(trn("voteAgain"));return;}b.userVote=type;if(type==="like")b.likes=(b.likes||0)+1;else b.dislikes=(b.dislikes||0)+1;save();render();if($("detailModal").classList.contains("open"))openDetail(id);toast(trn("voteSaved"));}
-function doAction(id,action){let b=books.find(x=>x.id===id);if(!b)return;if(action==="edit"){closeModal("detailModal");openForm(b);return;}if(action==="delete"){if(!confirm(trn("deletedConfirm")))return;books=books.filter(x=>x.id!==id);save();closeModal("detailModal");render();toast(trn("deleted"));return;}if(["read","reading","planned"].includes(action)){b.status=action;save();closeModal("detailModal");render();toast(trn("updated"));}}
-$("bookForm").addEventListener("submit",e=>{e.preventDefault();let title=$("title").value.trim();if(!title)return;let obj={id:editingId||"custom-"+Date.now(),title,author:$("author").value.trim(),language:$("bookLang").value,status:$("status").value,genre:$("genre").value.trim(),pages:Number($("bookPages").value)||0,rating:Number($("rating").value)||0,date:$("date").value,description:$("description").value.trim(),cover:coverData,likes:0,dislikes:0,userVote:""};if(editingId){let old=books.find(b=>b.id===editingId);obj.likes=old.likes||0;obj.dislikes=old.dislikes||0;obj.userVote=old.userVote||"";books=books.map(b=>b.id===editingId?obj:b);}else books.unshift(obj);save();closeModal("bookModal");render();toast(trn("saved"));});
-$("coverFile").addEventListener("change",e=>{let file=e.target.files[0];if(!file)return;if(!file.type.startsWith("image/")){toast("Please choose an image file.");return;}let reader=new FileReader();reader.onload=()=>{let img=new Image();img.onload=()=>{let canvas=document.createElement("canvas");let scale=Math.min(1,700/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);coverData=canvas.toDataURL("image/jpeg",.82);$("preview").innerHTML=`<img src="${coverData}" alt="Cover preview">`;};img.src=reader.result;};reader.readAsDataURL(file);});
-$("addTop").addEventListener("click",()=>openForm());$("langToggle").addEventListener("click",()=>{lang=lang==="en"?"uz":"en";localStorage.setItem("ml-lang",lang);translate();});$("languageSelect").addEventListener("change",e=>{lang=e.target.value;localStorage.setItem("ml-lang",lang);translate();});$("search").addEventListener("input",render);$("closeModal").addEventListener("click",()=>closeModal("bookModal"));$("closeDetail").addEventListener("click",()=>closeModal("detailModal"));$("cancelModal").addEventListener("click",()=>closeModal("bookModal"));
-$("export").addEventListener("click",()=>{let blob=new Blob([JSON.stringify(books,null,2)],{type:"application/json"});let url=URL.createObjectURL(blob);let a=document.createElement("a");a.href=url;a.download="my-library-backup.json";a.click();URL.revokeObjectURL(url);toast(trn("exportDone"));});
-$("reset").addEventListener("click",()=>{if(!confirm(trn("resetConfirm")))return;books=seed.map(x=>({...x}));save();render();toast(trn("resetDone"));});
 
-async function findBookCover(book){
-  // Google Books provides public volume metadata and cover-image URLs.
-  const query=encodeURIComponent('intitle:"'+book.title+'"'+(book.author?' inauthor:"'+book.author+'"':''));
-  const url='https://www.googleapis.com/books/v1/volumes?q='+query+'&maxResults=5&printType=books';
-  try{
-    const response=await fetch(url);
-    if(!response.ok)return null;
-    const data=await response.json();
-    const items=data.items||[];
-    const norm=s=>String(s||"").toLocaleLowerCase().replace(/[ʻ’']/g,"").replace(/[^a-z0-9а-яёғқҳўүҗң\s]/gi,"").trim();
-    const wanted=norm(book.title);
-    let best=null,bestScore=-1;
-    for(const item of items){
-      const info=item.volumeInfo||{};
-      const title=norm(info.title);
-      let score=0;
-      if(title===wanted)score+=10;
-      else if(title.includes(wanted)||wanted.includes(title))score+=5;
-      if(book.author&&Array.isArray(info.authors)&&info.authors.some(a=>norm(a).includes(norm(book.author))||norm(book.author).includes(norm(a))))score+=5;
-      if(info.imageLinks)score+=2;
-      if(score>bestScore){bestScore=score;best={info,score};}
-    }
-    if(!best||best.score<5||!best.info.imageLinks)return null;
-    const links=best.info.imageLinks;
-    let image=links.extraLarge||links.large||links.medium||links.small||links.thumbnail||links.smallThumbnail;
-    if(!image)return null;
-    image=image.replace(/^http:/,"https:").replace("&edge=curl","");
-    return {image, pages:best.info.pageCount||0, description:best.info.description||""};
-  }catch(error){return null;}
+function starLine(n){return n?`<span>${"★".repeat(n)}<span style="color:#4b596d">${"★".repeat(5-n)}</span></span> <span style="color:#e5eefb">${Number(n).toFixed(1)}</span>`:`<span style="color:var(--muted)">${trn("notRated")}</span>`;}
+
+function bookCard(b){
+  return `<article class="book-card" data-open="${b.id}" tabindex="0">${cover(b)}<div class="title">${esc(b.title)}</div><div class="author">${esc(b.author)}</div><div class="stars">${starLine(Number(b.rating)||0)}</div>${b.language?`<span class="tag">${b.language==="uz"?"O‘zbekcha":b.language==="en"?"English":"Other"}</span>`:""}${b.genre?`<span class="tag">${esc(b.genre)}</span>`:""}${b.description?`<p class="note">${esc(b.description.slice(0,115))}${b.description.length>115?"…":""}</p>`:""}<div class="votes"><button class="vote ${b.userVote==="like"?"selected":""}" data-vote="like" data-id="${b.id}">▲ ${b.likes||0}</button><button class="vote ${b.userVote==="dislike"?"selected":""}" data-vote="dislike" data-id="${b.id}">▼ ${b.dislikes||0}</button><span class="score">${trn("score")} ${score(b)>0?"+":""}${score(b)}</span></div></article>`;
 }
-$("findCovers").addEventListener("click",async()=>{
-  const targets=books.filter(b=>!b.cover);
-  if(!targets.length){toast(lang==="en"?"All books already have a cover image.":"Barcha kitoblarda muqova rasmi bor.");return;}
-  const button=$("findCovers");button.disabled=true;
-  let found=0;
-  for(let i=0;i<targets.length;i++){
-    button.textContent="…";
-    const result=await findBookCover(targets[i]);
-    if(result){
-      const b=books.find(x=>x.id===targets[i].id);
-      if(b&&!b.cover){b.cover=result.image;if(!b.pages&&result.pages)b.pages=result.pages;found++;}
-    }
-    // Keep requests gentle rather than hammering a public API.
-    await new Promise(resolve=>setTimeout(resolve,180));
-  }
-  save();render();button.textContent="▧";button.disabled=false;
-  toast(lang==="en"?`Found covers for ${found} of ${targets.length} books. You can upload any missing cover manually.`:`${targets.length} ta kitobdan ${found} tasiga muqova topildi. Qolganlariga rasmni qo‘lda yuklashingiz mumkin.`);
+
+function planCard(b){
+  return `<article class="plan-card" data-open="${b.id}" tabindex="0">${cover(b,true)}<div class="plan-info"><div class="title">${esc(b.title)}</div><div class="author">${esc(b.author||"")}</div><div class="sub" style="margin-top:6px">${b.pages?b.pages+" pages · ":""}${b.genre?esc(b.genre):b.status==="reading"?"Currently reading":"On your list"}</div><div class="plan-actions"><button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button></div></div></article>`;
+}
+
+function render(){
+  let q=$("search").value.trim().toLocaleLowerCase();
+  let matches=books.filter(b=>(b.title+" "+b.author+" "+b.genre).toLocaleLowerCase().includes(q));
+  
+  let read=matches.filter(b=>b.status==="read").sort((a,b)=>score(b)-score(a));
+  let reading=matches.filter(b=>b.status==="reading");
+  let planned=matches.filter(b=>b.status==="planned");
+
+  // Stats calculation
+  $("readCount").textContent=list("read").length;
+  $("planCount").textContent=list("planned").length;
+  let rated=list("read").filter(b=>Number(b.rating)>0);
+  $("avg").textContent=rated.length?(rated.reduce((s,b)=>s+Number(b.rating),0)/rated.length).toFixed(1):"4.8";
+  let pages=list("read").reduce((s,b)=>s+(Number(b.pages)||200),0);
+  $("pages").textContent=pages.toLocaleString();
+
+  // Render home grids with default items if empty
+  renderGrid("homeRead", read.length ? read.slice(0,5) : books.filter(b=>b.status==="read").slice(0,5));
+  renderPlans("homeReading", reading.length ? reading : books.filter(b=>b.status==="reading"));
+  renderPlans("homePlanned", planned.length ? planned.slice(0,6) : books.filter(b=>b.status==="planned").slice(0,6));
+
+  // Full pages
+  renderGrid("allRead", read.filter(b=>filter==="all"||b.language===filter));
+  renderPlans("allReading", reading);
+  renderPlans("allPlanned", planned);
+}
+
+function gotoPage(name){
+  if(name==="add"){openForm();return;}
+  currentPage=name;
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+  window.scrollTo({top:0,behavior:"smooth"});
+  render();
+}
+
+function translate(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-t]").forEach(el=>{let k=el.dataset.t;if(trn(k))el.textContent=trn(k);});
+  $("languageSelect").value=lang;
+  $("langToggle").title=lang==="en"?"Switch to Uzbek":"O‘zbekchaga o‘tkazish";
+  $("search").placeholder=lang==="en"?"Search books...":"Kitob qidirish...";
+  $("modalTitle").textContent=editingId?trn("editTitle"):trn("addTitle");
+  render();
+}
+
+function openForm(book=null){
+  editingId=book?book.id:null;
+  coverData=book?book.cover||"":"";
+  $("bookForm").reset();
+  $("title").value=book?.title||"";
+  $("author").value=book?.author||"";
+  $("bookLang").value=book?.language||"uz";
+  $("status").value=book?.status||"read";
+  $("genre").value=book?.genre||"";
+  $("bookPages").value=book?.pages||"";
+  $("rating").value=book?.rating||"0";
+  $("date").value=book?.date||"";
+  $("description").value=book?.description||"";
+  $("coverFile").value="";
+  $("preview").innerHTML=coverData?`<img src="${coverData}" alt="Cover preview">`:"Cover preview";
+  $("modalTitle").textContent=editingId?trn("editTitle"):trn("addTitle");
+  $("bookModal").classList.add("open");
+  setTimeout(()=>$("title").focus(),50);
+}
+
+function closeModal(id){$(id).classList.remove("open");}
+
+function openDetail(id){
+  let b=books.find(x=>x.id===id);if(!b)return;
+  detailId=id;
+  let statusOptions=b.status==="read"?`<button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="planned" data-id="${b.id}">${trn("movePlan")}</button>`:b.status==="reading"?`<button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button><button class="small-btn" data-action="planned" data-id="${b.id}">${trn("movePlan")}</button>`:`<button class="small-btn" data-action="reading" data-id="${b.id}">${trn("markReading")}</button><button class="small-btn" data-action="read" data-id="${b.id}">${trn("markRead")}</button>`;
+  $("detailBody").innerHTML=`<div class="detail-layout">${cover(b)}<div><h3 class="detail-title">${esc(b.title)}</h3><div class="author">${esc(b.author)}</div><div class="stars">${starLine(Number(b.rating)||0)}</div><div class="tag">${b.language==="uz"?"O‘zbekcha":b.language==="en"?"English":"Other"}</div>${b.genre?`<div class="tag">${esc(b.genre)}</div>`:""}<div class="sub" style="margin-top:10px">${b.pages?b.pages+" pages · ":""}${b.date?esc(b.date):""}</div></div></div><div class="detail-description">${esc(b.description||"No description added yet.")}</div><div class="votes"><button class="vote ${b.userVote==="like"?"selected":""}" data-vote="like" data-id="${b.id}">▲ ${trn("likes")} ${b.likes||0}</button><button class="vote ${b.userVote==="dislike"?"selected":""}" data-vote="dislike" data-id="${b.id}">▼ ${trn("dislikes")} ${b.dislikes||0}</button><span class="score">${trn("score")} ${score(b)>0?"+":""}${score(b)}</span></div><div class="detail-actions">${statusOptions}<button class="small-btn" data-action="edit" data-id="${b.id}">${trn("edit")}</button><button class="small-btn" data-action="delete" data-id="${b.id}">${trn("delete")}</button></div>`;
+  $("detailModal").classList.add("open");
+}
+
+document.addEventListener("click",e=>{
+  let page=e.target.closest("[data-page]");if(page){gotoPage(page.dataset.page);return;}
+  let go=e.target.closest("[data-goto]");if(go){e.preventDefault();gotoPage(go.dataset.goto);return;}
+  let close=e.target.closest("[data-close]");if(close){closeModal(close.dataset.close);return;}
+  let vote=e.target.closest("[data-vote]");if(vote){e.stopPropagation();castVote(vote.dataset.id,vote.dataset.vote);return;}
+  let action=e.target.closest("[data-action]");if(action){e.stopPropagation();doAction(action.dataset.id,action.dataset.action);return;}
+  let card=e.target.closest("[data-open]");if(card&&!e.target.closest("button"))openDetail(card.dataset.open);
+  let filterBtn=e.target.closest("[data-filter]");if(filterBtn){filter=filterBtn.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===filterBtn));render();}
 });
-$("year").textContent=new Date().getFullYear();translate();render();
+
+function castVote(id,type){
+  let b=books.find(x=>x.id===id);if(!b)return;
+  if(b.userVote){toast(trn("voteAgain"));return;}
+  b.userVote=type;if(type==="like")b.likes=(b.likes||0)+1;else b.dislikes=(b.dislikes||0)+1;
+  save();render();if($("detailModal").classList.contains("open"))openDetail(id);toast(trn("voteSaved"));
+}
+
+function doAction(id,action){
+  let b=books.find(x=>x.id===id);if(!b)return;
+  if(action==="edit"){closeModal("detailModal");openForm(b);return;}
+  if(action==="delete"){if(!confirm(trn("deletedConfirm")))return;books=books.filter(x=>x.id!==id);save();closeModal("detailModal");render();toast(trn("deleted"));return;}
+  if(["read","reading","planned"].includes(action)){b.status=action;save();closeModal("detailModal");render();toast(trn("updated"));}
+}
+
+$("bookForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  let title=$("title").value.trim();if(!title)return;
+  let obj={id:editingId||"custom-"+Date.now(),title,author:$("author").value.trim(),language:$("bookLang").value,status:$("status").value,genre:$("genre").value.trim(),pages:Number($("bookPages").value)\vert{}\vert{}200,rating:Number($("rating").value)||0,date:$("date").value,description:$("description").value.trim(),cover:coverData,likes:0,dislikes:0,userVote:""};
+  if(editingId){let old=books.find(b=>b.id===editingId);obj.likes=old.likes||0;obj.dislikes=old.dislikes||0;obj.userVote=old.userVote||"";books=books.map(b=>b.id===editingId?obj:b);}else books.unshift(obj);
+  save();closeModal("bookModal");render();toast(trn("saved"));
+});
+
+$("coverFile").addEventListener("change",e=>{
+  let file=e.target.files[0];if(!file)return;
+  let reader=new FileReader();
+  reader.onload=()=>{let img=new Image();img.onload=()=>{let canvas=document.createElement("canvas");let scale=Math.min(1,700/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);coverData=canvas.toDataURL("image/jpeg",.82);$("preview").innerHTML=`<img src="${coverData}" alt="Cover preview">`;};img.src=reader.result;};
+  reader.readAsDataURL(file);
+});
+
+$("addTop").addEventListener("click",()=>openForm());
+$("langToggle").addEventListener("click",()=>{lang=lang==="en"?"uz":"en";localStorage.setItem("ml-lang",lang);translate();});
+$("languageSelect").addEventListener("change",e=>{lang=e.target.value;localStorage.setItem("ml-lang",lang);translate();});
+$("search").addEventListener("input",render);
+$("resetCloud").addEventListener("click",()=>{if(!confirm("Reset library state?"))return;books=seed.map(x=>({...x}));save();render();toast(trn("resetDone"));});
+$("year").textContent=new Date().getFullYear();
+translate();render();
 </script>
 </body>
 </html>
