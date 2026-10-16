@@ -14,7 +14,21 @@ app = FastAPI(title="My Library Production API", docs_url=None, redoc_url=None) 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-origins = os.getenv("CORS_ORIGINS", "*").split(",")
+# Configure CORS origins safely. In production default to the GitHub Pages origin.
+def parse_origins(raw: str):
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+raw_origins = os.getenv("CORS_ORIGINS")
+if os.getenv("ENVIRONMENT") == "production":
+    if raw_origins:
+        origins = parse_origins(raw_origins)
+        # Disallow a wildcard in production from env to avoid accidental open CORS
+        if "*" in origins:
+            raise RuntimeError("CORS_ORIGINS must not contain '*' in production")
+    else:
+        origins = ["https://mirzobek1204.github.io"]
+else:
+    origins = parse_origins(raw_origins or "*")
 
 app.add_middleware(
     CORSMiddleware,
