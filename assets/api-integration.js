@@ -80,6 +80,15 @@
   async function loadBooks() {
     if (!token() || syncing) return;
     syncing = true;
+    // Preserve the original browser-only library before server data enters the app state.
+    try {
+      if (localStorage.getItem("ml-local-books-backup") === null) {
+        const local = localStorage.getItem("ml-books");
+        if (local !== null) localStorage.setItem("ml-local-books-backup", local);
+      }
+    } catch (error) {
+      console.warn("Could not preserve a local library backup.", error);
+    }
     try {
       const remote = await request("/books");
       if (Array.isArray(remote)) {
