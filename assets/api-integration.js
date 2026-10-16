@@ -1,99 +1,292 @@
-// assets/api-integration.js
-// Minimal, non-invasive integration between frontend and backend.
-// Uses API_CONFIG from api-config.js for BASE_URL and token helpers.
+// Authenticated API integration for My Library. Local mode remains available when logged out.
+(function () {
+  if (window.__ml_api_integration_loaded) return;
+  window.__ml_api_integration_loaded = true;
 
-(function(){
-  if(window.__ml_api_integration_loaded) return; window.__ml_api_integration_loaded = true;
-  const BASE = API_CONFIG.BASE_URL;
-  const getToken = API_CONFIG.getToken; const setToken = API_CONFIG.setToken; const removeToken = API_CONFIG.removeToken;
+  const config = window.API_CONFIG;
+  const app = window.MLApp;
+  if (!config || !app) {
+    console.error("My Library API integration: API_CONFIG or MLApp is missing.");
+    return;
+  }
 
-  function authFetch(path, opts={}){
-    opts.headers = opts.headers || {};
-    if(!opts.headers['Content-Type'] && !(opts.body instanceof FormData)) opts.headers['Content-Type']='application/json';
-    const token = getToken();
-    if(token) opts.headers['Authorization']='Bearer '+token;
-    return fetch(BASE+path, opts).then(async res=>{
-      if(res.status===401){ removeToken(); toast('Session expired. Please log in again.'); return Promise.reject({unauthorized:true}); }
-      if(!res.ok){
-        let detail = res.statusText;
-        try{ const j = await res.json(); if(j && j.detail) detail = j.detail; }catch(e){}
-        return Promise.reject(new Error(detail));
-      }
-      const ct = (res.headers.get('content-type')||'')
-      if(!ct.includes('application/json')) return null;
-      return res.json();
-    });
+  const $ = id => document.getElementById(id);
+  const token = config.getToken;
+  const toast = message => app.toast(message);
+  let syncing = false;
+
+  async function request(path, options = {}) {
+    const headers = { ...(options.headers || {}) };
+    if (options.body !== undefined && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
+    if (token()) headers.Authorization = "Bearer " + token();
+    const response = await fetch(config.BASE_URL + path, { ...options, headers });
+    if (response.status === 401) {
+      config.removeToken();
+      updateAuthState();
+      throw new Error("Session expired. Please log in again.");
+    }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      const detail = data.detail;
+      throw new Error(Array.isArray(detail) ? detail.map(item => item.msg).join(", ") : (detail || response.statusText || "Request failed"));
+    }
+    if (response.status === 204) return null;
+    const type = response.headers.get("content-type") || "";
+    return type.includes("application/json") ? response.json() : null;
   }
 
   const auth = {
-    async register(username,password){
-      const res = await fetch(BASE+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
-      if(!res.ok){ const j=await res.json().catch(()=>null); throw new Error((j&&j.detail)||'Register failed'); }
-      return res.json();
+    async register(username, password) {
+      return request("/auth/register", { method: "POST", body: JSON.stringify({ username, password }) });
     },
-    async login(username,password){
-      const form = new URLSearchParams(); form.append('username',username); form.append('password',password);
-      const res = await fetch(BASE+'/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:form.toString()});
-      if(!res.ok){ const j=await res.json().catch(()=>null); throw new Error((j&&j.detail)||'Login failed'); }
-      const data = await res.json(); if(data && data.access_token){ setToken(data.access_token); return data;} throw new Error('No access_token returned');
+    async login(username, password) {
+      const body = new URLSearchParams({ username, password });
+      const result = await request("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString()
+      });
+      if (!result || !result.access_token) throw new Error("The server did not return an access token.");
+      config.setToken(result.access_token);
+      return result;
     },
-    logout(){ removeToken(); }
+    logout() { config.removeToken(); }
   };
 
-  const apiBooks = {
-    list(){ return authFetch('/books',{method:'GET'}); },
-    create(book){ return authFetch('/books',{method:'POST',body:JSON.stringify(book)}); },
-    remove(id){ return authFetch('/books/'+encodeURIComponent(id),{method:'DELETE'}); }
-  };
+  function toPayload(book) {
+    return {
+      title: String(book.title || "").trim(),
+      author: book.author || "",
+      status: ["read", "reading", "planned"].includes(book.status) ? book.status : "planned",
+      genre: book.genre || "",
+      language: book.language || "uz",
+      pages: Math.max(0, Number(book.pages) || 0),
+      rating: Math.min(5, Math.max(0, Number(book.rating) || 0)),
+      date: book.date || null,
+      description: book.description || "",
+      cover: book.cover || ""
+    };
+  }
 
-  // Insert small settings panel for auth/migration (non-destructive)
-  function createSettingsPanel(){
-    const settingsPage = document.getElementById('page-settings'); if(!settingsPage) return; if(document.getElementById('ml-auth-panel')) return;
-    const container = document.createElement('div'); container.id='ml-auth-panel'; container.style.marginTop='12px';
-    container.innerHTML = `
-      <div class="section-head" style="margin-bottom:8px"><div><div class="section-title">🔑 <span>Account</span></div><div class="sub">Sign in to sync your library</div></div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;"> 
-        <div style="min-width:220px;flex:1"><label for="ml-username">Username</label><input id="ml-username" placeholder="username" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit"/></div>
-        <div style="min-width:220px;flex:1"><label for="ml-password">Password</label><input id="ml-password" type="password" placeholder="password" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit"/></div>
-        <div style="display:flex;gap:8px;align-items:center"><button id="ml-register-btn" class="secondary">Register</button><button id="ml-login-btn" class="primary">Login</button><button id="ml-logout-btn" class="secondary" style="display:none">Logout</button></div>
-      </div>
-      <div style="margin-top:10px"><button id="ml-migrate-btn" class="secondary">Migrate local books to server</button><small style="display:block;margin-top:6px;color:var(--muted)">Local books are preserved. Migration is one-way for convenience; you can export before migrating.</small></div>
-    `;
-    const firstChild = settingsPage.querySelector('.page-intro') || settingsPage.firstElementChild;
-    if(firstChild && firstChild.parentElement) firstChild.parentElement.insertBefore(container, firstChild.nextSibling); else settingsPage.appendChild(container);
+  function fromServer(book) {
+    return {
+      id: String(book.id), title: book.title || "", author: book.author || "",
+      status: book.status || "planned", genre: book.genre || "", language: book.language || "uz",
+      pages: Number(book.pages) || 0, rating: Number(book.rating) || 0, date: book.date || "",
+      description: book.description || "", cover: book.cover || "", likes: 0, dislikes: 0, userVote: ""
+    };
+  }
 
-    document.getElementById('ml-register-btn').addEventListener('click', async ()=>{
-      const u=document.getElementById('ml-username').value.trim(); const p=document.getElementById('ml-password').value; if(!u||!p) return toast('Please enter username and password');
-      try{ await auth.register(u,p); toast('Registered — you can now log in'); }catch(err){ toast(err.message||'Register failed'); }
-    });
-
-    document.getElementById('ml-login-btn').addEventListener('click', async ()=>{
-      const u=document.getElementById('ml-username').value.trim(); const p=document.getElementById('ml-password').value; if(!u||!p) return toast('Please enter username and password');
-      try{ await auth.login(u,p); updateAuthState(); toast('Logged in — fetching your books'); await fetchAndReplaceBooks(); }catch(err){ toast(err.message||'Login failed'); }
-    });
-
-    document.getElementById('ml-logout-btn').addEventListener('click', ()=>{ auth.logout(); updateAuthState(); toast('Logged out'); });
-
-    document.getElementById('ml-migrate-btn').addEventListener('click', async ()=>{
-      if(!confirm('Migrate local books to your account? This will copy them to the server but will NOT delete the local copies.')) return;
-      if(!getToken()){ toast('Please login first to migrate'); return; }
-      let localBooks=[]; try{ localBooks = JSON.parse(localStorage.getItem('ml-books'))||[]; }catch(e){ localBooks=[]; }
-      let migrated=0;
-      for(const b of localBooks){ const payload={ title: b.title||'Untitled', author:b.author||'', status:b.status||'planned', genre:b.genre||'', language:b.language||'uz', pages:Number(b.pages)||0, rating:Number(b.rating)||0, date:b.date||null, description:b.description||'', cover:b.cover||null };
-        try{ await apiBooks.create(payload); migrated++; await new Promise(r=>setTimeout(r,120)); }catch(e){}
+  async function loadBooks() {
+    if (!token() || syncing) return;
+    syncing = true;
+    try {
+      const remote = await request("/books");
+      if (Array.isArray(remote)) {
+        app.setBooks(remote.map(fromServer));
+        localStorage.setItem("ml-remote-books", JSON.stringify(remote));
       }
-      toast(`Migrated ${migrated} books (local copies preserved)`);
-      await fetchAndReplaceBooks();
+    } catch (error) {
+      toast("Could not sync books: " + error.message);
+    } finally {
+      syncing = false;
+    }
+  }
+
+  async function saveBook(book, editingId) {
+    if (!token()) return false;
+    const payload = toPayload(book);
+    const isServerId = editingId !== null && /^\d+$/.test(String(editingId));
+    try {
+      let saved;
+      if (isServerId) {
+        saved = await request("/books/" + encodeURIComponent(editingId), {
+          method: "PUT", body: JSON.stringify(payload)
+        });
+      } else {
+        saved = await request("/books", { method: "POST", body: JSON.stringify(payload) });
+      }
+      const list = app.getBooks();
+      const normalized = fromServer(saved);
+      app.setBooks(isServerId ? list.map(item => String(item.id) === String(editingId) ? normalized : item) : [normalized, ...list]);
+      return true;
+    } catch (error) {
+      toast("Book was not saved to the server: " + error.message);
+      return false;
+    }
+  }
+
+  async function deleteBook(id) {
+    if (!token() || !/^\d+$/.test(String(id))) return false;
+    try {
+      await request("/books/" + encodeURIComponent(id), { method: "DELETE" });
+      app.setBooks(app.getBooks().filter(book => String(book.id) !== String(id)));
+      return true;
+    } catch (error) {
+      toast("Book was not deleted: " + error.message);
+      return false;
+    }
+  }
+
+  function createSettingsPanel() {
+    const page = $("page-settings");
+    if (!page || $("ml-auth-panel")) return;
+    const panel = document.createElement("section");
+    panel.id = "ml-auth-panel";
+    panel.className = "section";
+    panel.style.maxWidth = "650px";
+    panel.style.marginTop = "24px";
+    panel.innerHTML = `
+      <div class="section-title">Account & Cloud Sync</div>
+      <p class="sub" style="margin:8px 0 16px">Sign in to sync books across devices. Logged-out changes stay in this browser.</p>
+      <div class="field"><label for="ml-username">Username</label><input id="ml-username" autocomplete="username" minlength="3" maxlength="50" placeholder="At least 3 characters"></div>
+      <div class="field" style="margin-top:12px"><label for="ml-password">Password</label><input id="ml-password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button id="ml-register-btn" class="secondary" type="button">Create account</button>
+        <button id="ml-login-btn" class="primary" type="button">Log in & sync</button>
+        <button id="ml-logout-btn" class="secondary" type="button" hidden>Log out</button>
+        <button id="ml-migrate-btn" class="secondary" type="button" hidden>Import this browser's books</button>
+      </div>
+      <p id="ml-auth-status" class="help" style="margin-top:12px" role="status"></p>
+      <p class="help" style="margin-top:8px">Import copies local books into this account. Your local backup is not deleted. Voting is currently browser-local.</p>
+    `;
+    const intro = page.querySelector(".page-intro");
+    if (intro) intro.insertAdjacentElement("afterend", panel);
+    else page.appendChild(panel);
+
+    $("ml-register-btn").addEventListener("click", async () => {
+      const username = $("ml-username").value.trim();
+      const password = $("ml-password").value;
+      if (!username || !password) return toast("Enter a username and password first.");
+      try {
+        await auth.register(username, password);
+        $("ml-auth-status").textContent = "Account created. Log in to sync your books.";
+        toast("Account created. You can now log in.");
+      } catch (error) { toast("Registration failed: " + error.message); }
+    });
+
+    $("ml-login-btn").addEventListener("click", async () => {
+      const username = $("ml-username").value.trim();
+      const password = $("ml-password").value;
+      if (!username || !password) return toast("Enter a username and password first.");
+      const button = $("ml-login-btn");
+      button.disabled = true;
+      try {
+        await auth.login(username, password);
+        updateAuthState();
+        await loadBooks();
+        $("ml-auth-status").textContent = "Signed in. Your server library is loaded.";
+        toast("Logged in and synced.");
+      } catch (error) {
+        config.removeToken();
+        updateAuthState();
+        toast("Login failed: " + error.message);
+      } finally { button.disabled = false; }
+    });
+
+    $("ml-logout-btn").addEventListener("click", () => {
+      auth.logout();
+      updateAuthState();
+      toast("Logged out. New changes will stay in this browser.");
+    });
+
+    $("ml-migrate-btn").addEventListener("click", async () => {
+      if (!token()) return toast("Log in before importing books.");
+      const local = JSON.parse(localStorage.getItem("ml-books") || "[]");
+      if (!local.length) return toast("There are no local books to import.");
+      const key = "ml-imported-" + $("ml-username").value.trim().toLowerCase();
+      if (localStorage.getItem(key) && !confirm("This browser has imported books before. Import again? This may create duplicates.")) return;
+      if (!confirm("Copy " + local.length + " local books to your account? Existing local books will remain unchanged.")) return;
+      const button = $("ml-migrate-btn");
+      button.disabled = true;
+      let succeeded = 0;
+      try {
+        for (const book of local) {
+          await request("/books", { method: "POST", body: JSON.stringify(toPayload(book)) });
+          succeeded++;
+        }
+        localStorage.setItem(key, "true");
+        await loadBooks();
+        toast("Imported " + succeeded + " of " + local.length + " books.");
+      } catch (error) {
+        toast("Imported " + succeeded + " books before an error: " + error.message + ". Retry carefully to avoid duplicates.");
+      } finally { button.disabled = false; }
     });
 
     updateAuthState();
   }
 
-  function updateAuthState(){ const loggedIn=!!getToken(); const logoutBtn=document.getElementById('ml-logout-btn'); const loginBtn=document.getElementById('ml-login-btn'); if(logoutBtn && loginBtn){ logoutBtn.style.display=loggedIn?'':'none'; loginBtn.style.display=loggedIn?'none':''; } }
+  function updateAuthState() {
+    const loggedIn = Boolean(token());
+    if ($("ml-login-btn")) $("ml-login-btn").hidden = loggedIn;
+    if ($("ml-register-btn")) $("ml-register-btn").hidden = loggedIn;
+    if ($("ml-logout-btn")) $("ml-logout-btn").hidden = !loggedIn;
+    if ($("ml-migrate-btn")) $("ml-migrate-btn").hidden = !loggedIn;
+    if ($("ml-auth-status")) $("ml-auth-status").textContent = loggedIn ? "Signed in. Cloud sync is enabled." : "Not signed in. Books are saved in this browser.";
+  }
 
-  async function fetchAndReplaceBooks(){ try{ const serverBooks = await apiBooks.list(); if(!Array.isArray(serverBooks)) return; const mapped = serverBooks.map(sb=>({ id: String(sb.id), title: sb.title||'', author: sb.author||'', status: sb.status||'planned', genre: sb.genre||'', description: sb.description||'', language: sb.language||'uz', pages: Number(sb.pages)||0, rating: Number(sb.rating)||0, date: sb.date||'', cover: sb.cover||'', likes:0, dislikes:0, userVote:null })); if(window.books && Array.isArray(window.books)){ window.books = mapped; try{ localStorage.setItem('ml-remote-books', JSON.stringify(mapped)); }catch(e){} if(typeof render==='function') render(); } else { try{ localStorage.setItem('ml-remote-books', JSON.stringify(mapped)); }catch(e){} } }catch(e){} }
+  // Existing form remains visually unchanged; intercept its submit to persist through the API.
+  document.addEventListener("submit", async event => {
+    if (event.target.id !== "bookForm" || !token()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const title = $("title").value.trim();
+    if (!title) return;
+    const id = app.getEditingId();
+    const book = {
+      id: id || "pending", title, author: $("author").value.trim(),
+      language: $("bookLang").value, status: $("status").value,
+      genre: $("genre").value.trim(), pages: Number($("bookPages").value) || 0,
+      rating: Number($("rating").value) || 0, date: $("date").value,
+      description: $("description").value.trim(), cover: app.getCoverData()
+    };
+    const submit = event.target.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    const ok = await saveBook(book, id);
+    if (submit) submit.disabled = false;
+    if (ok) {
+      app.closeBookModal();
+      toast("Book saved to your account.");
+    }
+  }, true);
 
-  function initWhenReady(){ if(document.readyState==='complete' || document.readyState==='interactive'){ createSettingsPanel(); if(getToken()) fetchAndReplaceBooks(); } else document.addEventListener('DOMContentLoaded', ()=>{ createSettingsPanel(); if(getToken()) fetchAndReplaceBooks(); }); }
+  // Intercept delete and status changes in the existing detail modal.
+  document.addEventListener("click", async event => {
+    if (!token()) return;
+    const action = event.target.closest("[data-action]");
+    if (!action) return;
+    const id = action.dataset.id;
+    if (action.dataset.action === "delete" && /^\d+$/.test(String(id))) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      const book = app.getBooks().find(item => String(item.id) === String(id));
+      if (!book || !confirm("Delete this book from your account?")) return;
+      if (await deleteBook(id)) {
+        app.closeDetailModal();
+        toast("Book deleted.");
+      }
+      return;
+    }
+    if (["read", "reading", "planned"].includes(action.dataset.action) && /^\d+$/.test(String(id))) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      const book = app.getBooks().find(item => String(item.id) === String(id));
+      if (!book) return;
+      const updated = { ...book, status: action.dataset.action };
+      try {
+        const saved = await request("/books/" + encodeURIComponent(id), { method: "PUT", body: JSON.stringify(toPayload(updated)) });
+        app.setBooks(app.getBooks().map(item => String(item.id) === String(id) ? fromServer(saved) : item));
+        app.closeDetailModal();
+        toast("Book status updated.");
+      } catch (error) { toast("Could not update status: " + error.message); }
+    }
+  }, true);
 
-  initWhenReady(); window.MLApi={ auth, apiBooks, fetchAndReplaceBooks };
+  // Voting is not part of the current backend schema, so don't imply it syncs to the cloud.
+  function init() {
+    createSettingsPanel();
+    if (token()) loadBooks();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+
+  window.MLApi = { auth, loadBooks, saveBook, deleteBook };
 })();
