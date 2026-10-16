@@ -1,0 +1,25 @@
+databases:
+  - name: mylibrary-db
+    databaseName: mylibrary
+    user: mylibrary_user
+    plan: free
+
+services:
+  - type: web
+    name: my-library-backend
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mylibrary-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: "*"
