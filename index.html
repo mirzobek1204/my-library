@@ -180,6 +180,22 @@ $("findCovers").addEventListener("click",async()=>{
   toast(lang==="en"?`Found covers for ${found} of ${targets.length} books. You can upload any missing cover manually.`:`${targets.length} ta kitobdan ${found} tasiga muqova topildi. Qolganlariga rasmni qo‘lda yuklashingiz mumkin.`);
 });
 $("year").textContent=new Date().getFullYear();translate();render();
+
+// Public bridge for the additive API integration module. Keep the app's lexical state authoritative.
+Object.defineProperty(window, "books", { configurable: true, get: () => books, set: value => { if (Array.isArray(value)) books = value; } });
+window.MLApp = {
+  getBooks: () => books,
+  setBooks: value => { if (Array.isArray(value)) { books = value; save(); render(); } },
+  getEditingId: () => editingId,
+  getCoverData: () => coverData,
+  closeBookModal: () => closeModal("bookModal"),
+  closeDetailModal: () => closeModal("detailModal"),
+  refresh: () => { save(); render(); },
+  toast
+};
+
 </script>
+<script src="api-config.js"></script>
+<script src="assets/api-integration.js"></script>
 </body>
 </html>
