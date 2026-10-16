@@ -17,7 +17,9 @@
 
   async function request(path, options = {}) {
     const headers = { ...(options.headers || {}) };
-    if (options.body !== undefined && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
+    if (options.body !== undefined && !(options.body instanceof FormData) && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
     if (token()) headers.Authorization = "Bearer " + token();
     const response = await fetch(config.BASE_URL + path, { ...options, headers });
     if (response.status === 401) {
