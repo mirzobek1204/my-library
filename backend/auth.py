@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import User
 
+# SECRET_KEY fallback exists for local dev, but disallow fallback in production
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key-for-development")
+if os.getenv("ENVIRONMENT") == "production" and SECRET_KEY == "fallback-secret-key-for-development":
+    raise RuntimeError("SECRET_KEY must be set in production")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
@@ -18,14 +22,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
